@@ -276,6 +276,7 @@
 						"url": {
 							"raw": "{{base_url}}/user",
 							"host": ["{{base_url}}"],
+							"path": ["user"]
 						}
 					}
 				}
@@ -322,7 +323,7 @@
 						"url": {
 							"raw": "127.0.0.1:8000/saved-searches",
 							"host": ["127.0.0.1:8000"],
-								"path": ["saved-searches"]
+							"path": ["saved-searches"]
 						}
 					}
 				}
@@ -352,7 +353,7 @@
 	"variable": [
 		{
 			"key": "127.0.0.1:8000",
-			"value": "https://graduation-project-production-a85c.up.railway.app",
+			"value": "https://mughtarib.abaadre.com/public",
 			"type": "string"
 		},
 		{
@@ -362,15 +363,3 @@
 		}
 	]
 }
-
-"variable": [
-    {"key": "127.0.0.1:8000",
-        "value": "https://mughtarib.abaadre.com/public",
-        "type": "string"
-    },
-    {
-        "key": "token",
-        "value": "YOUR_AUTH_TOKEN",
-        "type": "string"
-    }
-]
