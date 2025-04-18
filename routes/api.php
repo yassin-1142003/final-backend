@@ -1,50 +1,66 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\ApartmentController;
 use App\Http\Controllers\API\FavoriteController;
-use App\Http\Controllers\API\AuthController;
 
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
 |
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group.
+| Here is where you can register API routes for your application.
 |
 */
 
-// Authentication Routes
-Route::post('register', [AuthController::class, 'register']);
-Route::post('login', [AuthController::class, 'login']);
+// API Health Check Routes
+Route::get('/test', function () {
+    return response()->json([
+        'message' => 'API is working',
+        'timestamp' => now()->toDateTimeString(),
+    ]);
+});
 
-// Public Routes
-Route::get('apartments', [ApartmentController::class, 'index']);
-Route::get('apartments/{apartment}', [ApartmentController::class, 'show']);
-Route::get('featured-apartments', [ApartmentController::class, 'featured']);
-Route::get('search-apartments', [ApartmentController::class, 'search']);
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'version' => '1.0',
+        'environment' => app()->environment(),
+        'server_time' => now()->toDateTimeString(),
+    ]);
+});
+
+// Authentication Routes
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+Route::post('/verify-email/{id}/{hash}', [AuthController::class, 'verifyEmail'])->name('verification.verify');
+Route::post('/resend-verification-email', [AuthController::class, 'resendVerificationEmail']);
+
+// Public Apartment Routes
+Route::get('/apartments', [ApartmentController::class, 'index']);
+Route::get('/apartments/{apartment}', [ApartmentController::class, 'show']);
+Route::get('/featured-apartments', [ApartmentController::class, 'featured']);
+Route::get('/search-apartments', [ApartmentController::class, 'search']);
 
 // Protected Routes
 Route::middleware('auth:sanctum')->group(function () {
-    // User Routes
-    Route::get('user', [AuthController::class, 'user']);
-    Route::post('logout', [AuthController::class, 'logout']);
-    Route::put('user/profile', [AuthController::class, 'updateProfile']);
+    // User Profile Routes
+    Route::get('/user', [AuthController::class, 'me']);
+    Route::post('/logout', [AuthController::class, 'logout']);
 
-    // Apartment Routes (Protected Operations)
-    Route::post('apartments', [ApartmentController::class, 'store']);
-    Route::put('apartments/{apartment}', [ApartmentController::class, 'update']);
-    Route::delete('apartments/{apartment}', [ApartmentController::class, 'destroy']);
-    
-    // Favorite Routes
-    Route::get('favorites', [FavoriteController::class, 'index']);
-    Route::post('favorites', [FavoriteController::class, 'store']);
-    Route::delete('favorites/{apartment}', [FavoriteController::class, 'destroy']);
-    Route::get('favorites/{apartment}/check', [FavoriteController::class, 'check']);
+    // Protected Apartment Routes
+    Route::post('/apartments', [ApartmentController::class, 'store']);
+    Route::put('/apartments/{apartment}', [ApartmentController::class, 'update']);
+    Route::delete('/apartments/{apartment}', [ApartmentController::class, 'destroy']);
+    Route::get('/user/apartments', [ApartmentController::class, 'userApartments']);
 
-    // User's Apartments
-    Route::get('user/apartments', [ApartmentController::class, 'userApartments']);
-}); 
+    // Favorites Routes
+    Route::get('/favorites', [FavoriteController::class, 'index']);
+    Route::post('/favorites', [FavoriteController::class, 'store']);
+    Route::delete('/favorites/{apartment}', [FavoriteController::class, 'destroy']);
+    Route::get('/favorites/{apartment}/check', [FavoriteController::class, 'check']);
+    Route::post('/favorites/{listing}/toggle', [FavoriteController::class, 'toggle']);
+});

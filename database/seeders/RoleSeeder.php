@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Role;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class RoleSeeder extends Seeder
 {
@@ -12,26 +12,25 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        $roles = [
+        DB::table('roles')->insert([
             [
-                'id' => 1,
                 'name' => 'admin',
-                'description' => 'Full control over the system',
+                'description' => 'Administrator role',
+                'created_at' => now(),
+                'updated_at' => now()
             ],
             [
-                'id' => 2,
-                'name' => 'owner',
-                'description' => 'Can create and manage property listings',
-            ],
-            [
-                'id' => 3,
                 'name' => 'user',
-                'description' => 'Can browse and search for properties',
+                'description' => 'Regular user role',
+                'created_at' => now(),
+                'updated_at' => now()
             ],
-        ];
-
-        foreach ($roles as $role) {
-            Role::updateOrCreate(['id' => $role['id']], $role);
-        }
+            [
+                'name' => 'owner',
+                'description' => 'Property owner role',
+                'created_at' => now(),
+                'updated_at' => now()
+            ]
+        ]);
     }
 } 
