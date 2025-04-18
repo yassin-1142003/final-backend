@@ -3,54 +3,160 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Models\Favorite;
 use App\Models\Apartment;
+use App\Models\Favorite;
+use App\Traits\ApiResponses;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class FavoriteController extends Controller
 {
-    public function index(): JsonResponse
+    use ApiResponses;
+
+    /**
+     * Display a listing of user's favorite apartments
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function index()
     {
-        $favorites = Favorite::where('user_id', Auth::id())
-            ->with(['apartment.user', 'apartment.images'])
-            ->latest()
-            ->get();
-        
-        return response()->json($favorites);
+        try {
+            $favorites = Favorite::with(['apartment.images', 'apartment.user'])
+                ->where('user_id', Auth::id())
+                ->paginate(10);
+
+            return $this->successResponse($favorites, 'Favorites retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to retrieve favorites', $e->getMessage(), 500);
+        }
     }
 
-    public function store(Request $request): JsonResponse
+    /**
+     * Store a newly created favorite
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function store(Request $request)
     {
-        $request->validate([
-            'apartment_id' => 'required|exists:apartments,id'
-        ]);
+        try {
+            $apartment = Apartment::findOrFail($request->apartment_id);
 
-        $favorite = Favorite::firstOrCreate([
-            'user_id' => Auth::id(),
-            'apartment_id' => $request->apartment_id
-        ]);
+            // Check if already favorited
+            $existingFavorite = Favorite::where('user_id', Auth::id())
+                ->where('apartment_id', $apartment->id)
+                ->first();
 
-        return response()->json($favorite, 201);
+            if ($existingFavorite) {
+                return $this->errorResponse('Apartment already in favorites', null, 422);
+            }
+
+            DB::beginTransaction();
+
+            $favorite = Favorite::create([
+                'user_id' => Auth::id(),
+                'apartment_id' => $apartment->id
+            ]);
+
+            DB::commit();
+
+            return $this->successResponse(
+                ['favorite' => $favorite->load('apartment')],
+                'Apartment added to favorites successfully',
+                201
+            );
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->errorResponse('Failed to add to favorites', $e->getMessage(), 500);
+        }
     }
 
-    public function destroy(Apartment $apartment): JsonResponse
+    /**
+     * Remove the specified favorite
+     *
+     * @param Apartment $apartment
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function destroy(Apartment $apartment)
     {
-        $favorite = Favorite::where('user_id', Auth::id())
-            ->where('apartment_id', $apartment->id)
-            ->firstOrFail();
+        try {
+            $favorite = Favorite::where('user_id', Auth::id())
+                ->where('apartment_id', $apartment->id)
+                ->first();
 
-        $favorite->delete();
-        return response()->json(null, 204);
+            if (!$favorite) {
+                return $this->notFoundResponse('Favorite not found');
+            }
+
+            DB::beginTransaction();
+
+            $favorite->delete();
+
+            DB::commit();
+
+            return $this->successResponse(null, 'Apartment removed from favorites successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->errorResponse('Failed to remove from favorites', $e->getMessage(), 500);
+        }
     }
 
-    public function check(Apartment $apartment): JsonResponse
+    /**
+     * Check if an apartment is favorited by the user
+     *
+     * @param Apartment $apartment
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function check(Apartment $apartment)
     {
-        $isFavorite = Favorite::where('user_id', Auth::id())
-            ->where('apartment_id', $apartment->id)
-            ->exists();
+        try {
+            $isFavorited = Favorite::where('user_id', Auth::id())
+                ->where('apartment_id', $apartment->id)
+                ->exists();
 
-        return response()->json(['is_favorite' => $isFavorite]);
+            return $this->successResponse([
+                'is_favorited' => $isFavorited
+            ], 'Favorite status retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to check favorite status', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Toggle favorite status for an apartment
+     *
+     * @param Apartment $apartment
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function toggle(Apartment $apartment)
+    {
+        try {
+            DB::beginTransaction();
+
+            $favorite = Favorite::where('user_id', Auth::id())
+                ->where('apartment_id', $apartment->id)
+                ->first();
+
+            if ($favorite) {
+                $favorite->delete();
+                $message = 'Apartment removed from favorites successfully';
+            } else {
+                Favorite::create([
+                    'user_id' => Auth::id(),
+                    'apartment_id' => $apartment->id
+                ]);
+                $message = 'Apartment added to favorites successfully';
+            }
+
+            DB::commit();
+
+            return $this->successResponse([
+                'is_favorited' => !$favorite
+            ], $message);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->errorResponse('Failed to toggle favorite status', $e->getMessage(), 500);
+        }
     }
 } 

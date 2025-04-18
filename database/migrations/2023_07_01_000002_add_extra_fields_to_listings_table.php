@@ -19,6 +19,7 @@ return new class extends Migration
         });
 
         Schema::table('listing_images', function (Blueprint $table) {
+            $table->boolean('is_primary')->default(false)->after('path');
             $table->boolean('is_ownership_proof')->default(false)->after('is_primary');
         });
     }
@@ -33,7 +34,7 @@ return new class extends Migration
         });
 
         Schema::table('listing_images', function (Blueprint $table) {
-            $table->dropColumn('is_ownership_proof');
+            $table->dropColumn(['is_primary', 'is_ownership_proof']);
         });
     }
 }; 

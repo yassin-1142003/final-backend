@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\ApartmentController;
 use App\Http\Controllers\API\FavoriteController;
+use App\Http\Controllers\API\CommentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,11 +46,16 @@ Route::get('/apartments/{apartment}', [ApartmentController::class, 'show']);
 Route::get('/featured-apartments', [ApartmentController::class, 'featured']);
 Route::get('/search-apartments', [ApartmentController::class, 'search']);
 
+// Comment routes
+Route::get('apartments/{apartment}/comments', [CommentController::class, 'index']);
+Route::get('apartments/{apartment}/comments/{comment}', [CommentController::class, 'show']);
+Route::get('apartments/{apartment}/rating', [CommentController::class, 'getAverageRating']);
+
 // Protected Routes
 Route::middleware('auth:sanctum')->group(function () {
-    // User Profile Routes
-    Route::get('/user', [AuthController::class, 'me']);
+    Route::post('/refresh', [AuthController::class, 'refresh']);
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/user', [AuthController::class, 'me']);
 
     // Protected Apartment Routes
     Route::post('/apartments', [ApartmentController::class, 'store']);
@@ -63,4 +69,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/favorites/{apartment}', [FavoriteController::class, 'destroy']);
     Route::get('/favorites/{apartment}/check', [FavoriteController::class, 'check']);
     Route::post('/favorites/{listing}/toggle', [FavoriteController::class, 'toggle']);
+
+    // Protected comment routes
+    Route::post('apartments/{apartment}/comments', [CommentController::class, 'store']);
+    Route::put('apartments/{apartment}/comments/{comment}', [CommentController::class, 'update']);
+    Route::delete('apartments/{apartment}/comments/{comment}', [CommentController::class, 'destroy']);
 });

@@ -328,6 +328,119 @@
 					}
 				}
 			]
+		},
+		{
+			"name": "Apartments",
+			"item": [
+				{
+					"name": "Create Apartment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"if (jsonData.data && jsonData.data.id) {",
+									"    pm.environment.set(\"apartment_id\", jsonData.data.id);",
+									"    console.log(\"Apartment ID saved to environment\");",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "title",
+									"value": "Luxury Apartment",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "Beautiful luxury apartment with amazing views",
+									"type": "text"
+								},
+								{
+									"key": "price",
+									"value": "500000",
+									"type": "text"
+								},
+								{
+									"key": "location",
+									"value": "Downtown",
+									"type": "text"
+								},
+								{
+									"key": "bedrooms",
+									"value": "3",
+									"type": "text"
+								},
+								{
+									"key": "bathrooms",
+									"value": "2",
+									"type": "text"
+								},
+								{
+									"key": "area",
+									"value": "150",
+									"type": "text"
+								},
+								{
+									"key": "images[]",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/apartments",
+							"host": ["{{base_url}}"],
+							"path": ["api", "apartments"]
+						},
+						"description": "Create a new apartment listing. Requires authentication."
+					}
+				},
+				{
+					"name": "List All Apartments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/apartments",
+							"host": ["{{base_url}}"],
+							"path": ["api", "apartments"]
+						}
+					}
+				},
+				{
+					"name": "Get Single Apartment",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/apartments/{{apartment_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "apartments", "{{apartment_id}}"]
+						}
+					}
+				}
+			]
 		}
 	],
 	"event": [
@@ -359,6 +472,11 @@
 		{
 			"key": "token",
 			"value": "YOUR_AUTH_TOKEN",
+			"type": "string"
+		},
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:8000",
 			"type": "string"
 		}
 	]

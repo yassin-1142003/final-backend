@@ -13,33 +13,16 @@ return new class extends Migration
             $table->string('title');
             $table->text('description');
             $table->decimal('price', 10, 2);
+            $table->string('location');
             $table->integer('bedrooms');
             $table->integer('bathrooms');
-            $table->integer('square_feet');
-            $table->string('address');
-            $table->string('city');
-            $table->string('state');
-            $table->string('zip_code', 20);
-            $table->enum('status', ['available', 'rented', 'sold'])->default('available');
-            $table->enum('type', ['apartment', 'condo', 'studio']);
+            $table->decimal('area', 8, 2);
+            $table->string('status')->default('available');
+            $table->string('type');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->boolean('is_featured')->default(false);
-            $table->json('amenities')->nullable();
-            $table->decimal('latitude', 10, 8)->nullable();
-            $table->decimal('longitude', 11, 8)->nullable();
-            $table->integer('year_built')->nullable();
-            $table->boolean('is_published')->default(true);
-            $table->timestamp('published_at')->nullable();
+            $table->boolean('is_published')->default(false);
             $table->timestamps();
-            $table->softDeletes();
-
-            // Indexes for better search performance
-            $table->index('status');
-            $table->index('type');
-            $table->index('is_featured');
-            $table->index('is_published');
-            $table->index(['city', 'state']);
-            $table->index(['latitude', 'longitude']);
         });
     }
 

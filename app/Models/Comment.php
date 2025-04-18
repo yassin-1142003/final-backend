@@ -11,13 +11,15 @@ class Comment extends Model
 
     protected $fillable = [
         'user_id',
-        'listing_id',
+        'apartment_id',
         'content',
-        'is_approved',
+        'rating',
+        'is_approved'
     ];
 
     protected $casts = [
         'is_approved' => 'boolean',
+        'rating' => 'integer'
     ];
 
     /**
@@ -29,10 +31,10 @@ class Comment extends Model
     }
 
     /**
-     * Get the listing that this comment belongs to.
+     * Get the apartment that this comment belongs to.
      */
-    public function listing()
+    public function apartment()
     {
-        return $this->belongsTo(Listing::class);
+        return $this->belongsTo(Apartment::class);
     }
 } 
